@@ -11,7 +11,7 @@ const isGitHubUserPage = () => {
   const gitHubUserPageRegex = /^https:\/\/github\.com\/[^/]+\/?$/;
   regexTestResult = gitHubUserPageRegex.test(currentURL);
 
-  console.log("是用户页面？", regexTestResult);
+  console.log("is user pge?", regexTestResult);
   return regexTestResult;
 };
 
@@ -19,20 +19,22 @@ const getUserName = () => {
   const currentURL = window.location.href;
   const match = currentURL.match(/^https:\/\/github\.com\/([^/?]+)/);
   const userName = match ? match[1] : null;
-  console.log("用户名", userName);
+  console.log("username", userName);
   return userName;
 };
 
 const getUserIdWithApi = async (userName) => {
-  try {
-    const response = await fetch(`https://api.github.com/users/${userName}`);
-    const data = await response.json();
-    console.log(data.id);
-    return data.id;
-  } catch (error) {
-    console.error("Error fetching user ID:", error);
-    return null;
-  }
+  //TODO figure out why sometimes githun 404. this issue should be from gh not me. disable for now
+  // try {
+  //   const response = await fetch(`https://api.github.com/users/${userName}`);
+  //   const data = await response.json();
+  //   console.log(data.id);
+  // return data.id;
+  // } catch (error) {
+  //   console.error("Error fetching user ID:", error);
+  //   return null;
+  // }
+  return null;
 };
 
 const addOrEditOrEditHoverText = (notes) => {
@@ -131,14 +133,14 @@ const notesProcessor = async (userNameNotes, userIdNotes) => {
   if (userNameNotes === userIdNotes) {
     return userNameNotes;
   } else if (userNameNotes != userIdNotes) {
-    return (
-      conflictHintText + userNameNotes + conflictHintTextConnector + userIdNotes
-    );
+    return userNameNotes;
+    // conflictHintText + userNameNotes + conflictHintTextConnector + userIdNotes //idk why but sometimes github return 404
   }
 };
 
 const addButton = (text, onClick) => {
   const button = document.createElement("button");
+  ///v inline style
   button.textContent = text;
   button.style.margin = "0 10px";
   button.style.padding = "5px 10px";
@@ -148,7 +150,7 @@ const addButton = (text, onClick) => {
   button.style.cursor = "pointer";
   button.style.color = "rgba(255, 255, 255, 0.5)";
   button.style.transition = "background-color 0.3s ease, color 0.3s ease";
-
+  ///^ inline style
   button.addEventListener("mouseenter", () => {
     button.style.backgroundColor = "rgba(0, 0, 0, 1)";
     button.style.color = "rgba(255, 255, 255, 1)";
@@ -173,7 +175,7 @@ if (isGitHubUserPage()) {
 
     if (userNameNotes) {
       addOrEditOrEditHoverText(userNameNotes);
-      console.log("only yhm 备注：", userNameNotes);
+      console.log("only username：", userNameNotes);
     }
 
     const userId = await getUserIdFromUserNotes(userName);
@@ -187,9 +189,9 @@ if (isGitHubUserPage()) {
 
     if (notes) {
       addOrEditOrEditHoverText(notes);
-      console.log("备注：", notes);
+      console.log("note：", notes);
     } else {
-      console.log("添加备注");
+      console.log("add note");
       await addOrEditNotesForUserAndId(userName, userId, "test info");
     }
 
