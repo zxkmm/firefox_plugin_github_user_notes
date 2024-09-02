@@ -1,1 +1,1 @@
-# firefox_plugin_github_user_notes
+# github_user_notes
