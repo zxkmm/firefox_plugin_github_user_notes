@@ -1,20 +1,17 @@
 {
   "manifest_version": 2,
-  "name": "github_user_notes",
+  "name": "firefox_plugin_github_user_notes",
   "version": "1.0",
 
-  "applications": {
+  "browser_specific_settings": {
     "gecko": {
-      "id": "github-user-notes@zxkmm.com"
+      "id": "firefox_plugin_github_user_notes@zxkmm.com"
     }
   },
 
   "description": "Make notes regarding specific GitHub users",
 
-  "permissions": [
-    "activeTab",
-    "storage"
-  ],
+  "permissions": ["activeTab", "storage"],
 
   "icons": {
     "48": "icons/icon48.png"
