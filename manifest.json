@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "firefox_plugin_github_user_notes",
+  "name": "ff_plugin_github_user_notes",
   "version": "1.0",
 
   "browser_specific_settings": {
