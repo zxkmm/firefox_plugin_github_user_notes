@@ -192,7 +192,7 @@ if (isGitHubUserPage()) {
       console.log("note：", notes);
     } else {
       console.log("add note");
-      await addOrEditNotesForUserAndId(userName, userId, "test info");
+      // await addOrEditNotesForUserAndId(userName, userId, "test info");
     }
 
     const buttonContainer = document.createElement("div");
