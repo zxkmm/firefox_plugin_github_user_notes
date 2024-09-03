@@ -217,7 +217,10 @@ if (isGitHubUserPage()) {
       },
     );
 
-    buttonContainer.appendChild(deleteButton);
+    if (userNameNotes) {
+      buttonContainer.appendChild(deleteButton);
+    }
+
     buttonContainer.appendChild(addEditButton);
     document.body.appendChild(buttonContainer);
 
