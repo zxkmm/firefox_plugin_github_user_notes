@@ -1,8 +1,3 @@
-const KeyType = {
-  USERNAME: "USERNAME",
-  USERID: "USERID",
-};
-
 const isGitHubUserPage = () => {
   var regexTestResult = false;
   var elementTestResult = false;
@@ -23,22 +18,17 @@ const getUserName = () => {
   return userName;
 };
 
-const getUserIdWithApi = async (userName) => {
-  //TODO figure out why sometimes githun 404. this issue should be from gh not me. disable for now
-  // try {
-  //   const response = await fetch(`https://api.github.com/users/${userName}`);
-  //   const data = await response.json();
-  //   console.log(data.id);
-  // return data.id;
-  // } catch (error) {
-  //   console.error("Error fetching user ID:", error);
-  //   return null;
-  // }
-  return null;
+const createButtonContainer = () => {
+  const buttonContainer = document.createElement("div");
+  buttonContainer.style.position = "fixed";
+  buttonContainer.style.bottom = "20px";
+  buttonContainer.style.right = "20px";
+  buttonContainer.style.zIndex = "9999";
+  return buttonContainer;
 };
 
-const addOrEditHoverText = (notes) => {
-  // remove in case if it exist so behavior like edit
+const addOrEditHoverText = (_notes_) => {
+  // remove in case if it exist so behavior like edit. after refactor it should be not needed but just in case since it's not harmful anyways
   const existingHoverText = document.getElementById("hoverText");
 
   if (existingHoverText) {
@@ -47,7 +37,7 @@ const addOrEditHoverText = (notes) => {
 
   const hoverText = document.createElement("div");
   hoverText.id = "hoverText";
-  hoverText.textContent = notes;
+  hoverText.textContent = _notes_;
 
   ///v inline style
   hoverText.style.position = "fixed";
@@ -75,73 +65,25 @@ const addOrEditHoverText = (notes) => {
   document.body.appendChild(hoverText);
 };
 
-const addOrEditNotesForUserAndId = async (userName, userId, notes) => {
-  if (!userName && !userId) {
-    return false;
-  }
-
-  const promises = [];
-
-  if (userName) {
-    promises.push(
-      browser.storage.sync.set({ [`notes_username_${userName}`]: notes }),
-    );
-  }
-
-  if (userId) {
-    promises.push(browser.storage.sync.set({ [`notes_id_${userId}`]: notes }));
-  }
-
-  await Promise.all(promises);
-  return true;
-};
-
-const deleteUserNotes = (userName, userId) => {
-  const promises = [];
-  if (userName) {
-    promises.push(browser.storage.sync.remove(`notes_username_${userName}`));
-  }
-  if (userId) {
-    promises.push(browser.storage.sync.remove(`notes_id_${userId}`));
-  }
-  return Promise.all(promises);
-};
-
-const getUserIdFromUserNotes = async (userName) => {
-  const userId = await getUserIdWithApi(userName);
-  return userId;
-};
-
-const getUserNotes = async (keyType, key) => {
-  if (keyType !== KeyType.USERNAME && keyType !== KeyType.USERID) {
-    throw new Error("Invalid keyType. Must be USERNAME or USERID.");
-  }
-
-  const storageKey =
-    keyType === KeyType.USERNAME ? `notes_username_${key}` : `notes_id_${key}`;
-  const result = await browser.storage.sync.get(storageKey);
-  return result[storageKey] || "";
-};
-
-const notesProcessor = async (userNameNotes, userIdNotes) => {
+const notesProcessor = async (_userNameNotes_, _userIdNotes_) => {
   conflictHintText =
     "WARNING: Got different notes from this user's two identifiers.\n" +
     "This is probably because this user changed their username since you took last note,\n" +
     "or GitHub API return the ID failed.\n\n" +
     "The notes from username is: ";
   conflictHintTextConnector = "\n\nThe notes from user ID is: ";
-  if (userNameNotes === userIdNotes) {
-    return userNameNotes;
-  } else if (userNameNotes != userIdNotes) {
-    return userNameNotes;
-    // conflictHintText + userNameNotes + conflictHintTextConnector + userIdNotes //idk why but sometimes github return 404
+  if (_userNameNotes_ === _userIdNotes_) {
+    return _userNameNotes_;
+  } else if (_userNameNotes_ != _userIdNotes_) {
+    return _userNameNotes_;
+    // conflictHintText + userNameNotes + conflictHintTextConnector + userIdNotes //idk why but sometimes github return 404, disable for now
   }
 };
 
-const addButton = (text, onClick) => {
+const addButton = (_text_, _onClick_) => {
   const button = document.createElement("button");
   ///v inline style
-  button.textContent = text;
+  button.textContent = _text_;
   button.style.margin = "0 10px";
   button.style.padding = "5px 10px";
   button.style.backgroundColor = "rgba(0, 0, 0, 0.3)";
@@ -161,76 +103,87 @@ const addButton = (text, onClick) => {
     button.style.color = "rgba(255, 255, 255, 0.5)";
   });
 
-  button.addEventListener("click", onClick);
+  button.addEventListener("click", _onClick_);
   return button;
 };
 
-if (isGitHubUserPage()) {
-  (async () => {
-    const userName = getUserName();
-    console.log("un,", userName);
+const removeExistingElements = () => {
+  const existingHoverText = document.getElementById("hoverText");
+  if (existingHoverText) existingHoverText.remove();
 
-    const userNameNotes = await getUserNotes(KeyType.USERNAME, userName);
-    console.log("un note,", userNameNotes);
+  const existingButtonContainer = document.querySelector(
+    "div[style*='position: fixed'][style*='bottom: 20px'][style*='right: 20px']",
+  );
+  if (existingButtonContainer) existingButtonContainer.remove();
+};
 
-    if (userNameNotes) {
-      addOrEditHoverText(userNameNotes);
-      console.log("only username：", userNameNotes);
-    }
+const handleGitHubUserPage = async () => {
+  removeExistingElements();
+  const userName = getUserName();
 
-    const userId = await getUserIdFromUserNotes(userName);
-    console.log("id,", userId);
+  browser.runtime.sendMessage(
+    {
+      action: "getUserNotes",
+      userName: userName,
+    },
+    (response) => {
+      if (response.notes) {
+        addOrEditHoverText(response.notes);
+      }
 
-    const userIdNotes = await getUserNotes(KeyType.USERID, userId);
-    console.log("id note", userIdNotes);
+      const buttonContainer = createButtonContainer();
 
-    const notes = await notesProcessor(userNameNotes, userIdNotes);
-    console.log("processor result,", notes);
+      if (response.notes) {
+        const deleteButton = addButton("Delete notes for " + userName, () => {
+          browser.runtime.sendMessage({
+            action: "deleteUserNotes",
+            userName: userName,
+          });
+          checkAndHandleGitHubUserPage();
+        });
+        buttonContainer.appendChild(deleteButton);
+      }
 
-    if (notes) {
-      addOrEditHoverText(notes);
-      console.log("note：", notes);
-    } else {
-      console.log("add note");
-      // await addOrEditNotesForUserAndId(userName, userId, "test info");
-    }
+      const addEditButton = addButton(
+        "Add or edit notes for " + userName,
+        () => {
+          const newNotes = prompt("Enter new notes for this user:");
+          if (newNotes !== null) {
+            browser.runtime.sendMessage({
+              action: "addOrEditNotes",
+              userName: userName,
+              notes: newNotes,
+            });
+            addOrEditHoverText(newNotes);
+            checkAndHandleGitHubUserPage();
+          }
+        },
+      );
 
-    const buttonContainer = document.createElement("div");
-    buttonContainer.style.position = "fixed";
-    buttonContainer.style.bottom = "20px";
-    buttonContainer.style.right = "20px";
-    buttonContainer.style.zIndex = "9999";
+      buttonContainer.appendChild(addEditButton);
+      document.body.appendChild(buttonContainer);
+    },
+  );
+};
 
-    const deleteButton = addButton("Delete notes for " + userName, async () => {
-      await deleteUserNotes(userName, userId);
-      addOrEditHoverText("");
-    });
+///v main worker
+const checkAndHandleGitHubUserPage = () => {
+  if (isGitHubUserPage()) {
+    handleGitHubUserPage();
+  }
+};
 
-    const addEditButton = addButton(
-      "Add or edit notes for " + userName,
-      async () => {
-        const newNotes = prompt("Enter new notes for this user:");
-        if (newNotes !== null) {
-          await addOrEditNotesForUserAndId(userName, userId, newNotes);
-          addOrEditHoverText(newNotes);
-        }
-      },
-    );
+// take care of guys that load github specific page when boot
+checkAndHandleGitHubUserPage();
 
-    if (userNameNotes) {
-      buttonContainer.appendChild(deleteButton);
-    }
-
-    buttonContainer.appendChild(addEditButton);
-    document.body.appendChild(buttonContainer);
-
-    browser.storage.sync
-      .get(null)
-      .then((result) => {
-        console.log("All data in sync storage: ", result);
-      })
-      .catch((error) => {
-        console.error("Error getting all data: ", error);
-      });
-  })();
-}
+///v url change worker decleration
+let lastUrl = location.href;
+new MutationObserver(() => {
+  const url = location.href;
+  if (url !== lastUrl) {
+    lastUrl = url;
+    checkAndHandleGitHubUserPage();
+  }
+}).observe(document, { subtree: true, childList: true });
+///^ url change worker decleration
+///^ main worker

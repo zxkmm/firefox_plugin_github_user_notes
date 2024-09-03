@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "ff_plugin_github_user_notes",
-  "version": "1.1",
+  "version": "1.2",
 
   "browser_specific_settings": {
     "gecko": {
@@ -22,5 +22,10 @@
       "matches": ["*://github.com/*"],
       "js": ["user_notes.js"]
     }
-  ]
+  ],
+
+  "background": {
+    "scripts": ["event_handler.js"],
+    "persistent": false
+  }
 }
