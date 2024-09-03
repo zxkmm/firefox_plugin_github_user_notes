@@ -37,7 +37,7 @@ const getUserIdWithApi = async (userName) => {
   return null;
 };
 
-const addOrEditOrEditHoverText = (notes) => {
+const addOrEditHoverText = (notes) => {
   // remove in case if it exist so behavior like edit
   const existingHoverText = document.getElementById("hoverText");
 
@@ -174,7 +174,7 @@ if (isGitHubUserPage()) {
     console.log("un note,", userNameNotes);
 
     if (userNameNotes) {
-      addOrEditOrEditHoverText(userNameNotes);
+      addOrEditHoverText(userNameNotes);
       console.log("only username：", userNameNotes);
     }
 
@@ -188,7 +188,7 @@ if (isGitHubUserPage()) {
     console.log("processor result,", notes);
 
     if (notes) {
-      addOrEditOrEditHoverText(notes);
+      addOrEditHoverText(notes);
       console.log("note：", notes);
     } else {
       console.log("add note");
@@ -203,7 +203,7 @@ if (isGitHubUserPage()) {
 
     const deleteButton = addButton("Delete notes for " + userName, async () => {
       await deleteUserNotes(userName, userId);
-      addOrEditOrEditHoverText("");
+      addOrEditHoverText("");
     });
 
     const addEditButton = addButton(
@@ -212,7 +212,7 @@ if (isGitHubUserPage()) {
         const newNotes = prompt("Enter new notes for this user:");
         if (newNotes !== null) {
           await addOrEditNotesForUserAndId(userName, userId, newNotes);
-          addOrEditOrEditHoverText(newNotes);
+          addOrEditHoverText(newNotes);
         }
       },
     );
